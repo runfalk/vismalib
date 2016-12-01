@@ -1,4 +1,3 @@
-from urlparse import urljoin
 from datetime import date, datetime
 
 from .utils import combomethod, AttrProxy
@@ -429,13 +428,15 @@ class Customer(ModelReprMixin, VismaModel):
 
         last_invoice_date = None
         if json.get("LastInvoiceDate") is not None:
-            print json.get("LastInvoiceDate")
+            # Last character needs to be removed since Python dates only support
+            # 6 decimal precision, while the dated provided by visma has 7
             last_invoice_date = datetime.strptime(
                 json.get("LastInvoiceDate")[:-1], "%Y-%m-%dT%H:%M:%S.%f")
 
         last_edited = None
         if json.get("ChangedUtc") is not None:
-            print json.get("ChangedUtc")
+            # Last character needs to be removed since Python dates only support
+            # 6 decimal precision, while the dated provided by visma has 7
             last_edited = datetime.strptime(
                 json.get("ChangedUtc")[:-1], "%Y-%m-%dT%H:%M:%S.%f")
 
