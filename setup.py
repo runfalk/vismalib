@@ -33,6 +33,7 @@ if __name__ == "__main__":
             "Programming Language :: Python",
             "Programming Language :: Python :: 2",
             "Programming Language :: Python :: 3",
+            "Topic :: Office/Business :: Financial :: Accounting",
             "Topic :: Utilities",
         )
     )
