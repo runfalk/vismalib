@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from .utils import combomethod, AttrProxy
+from .utils import combomethod, getattrdeep, AttrProxy
 
 __all__ = [
     "DeliveryTerms",
@@ -386,7 +386,45 @@ class Customer(ModelReprMixin, VismaModel):
         :rtype: dict
         """
 
-        return {}
+        delivery_address = self.delivery_address or Address()
+
+        return {
+            "Id": self.id,
+            "CustomerNumber": self.number,
+            "CorporateIdentityNumber": self.nin,
+            "IsPrivatePerson": self.is_company,
+            "VatNumber": self.vat_number,
+            "CurrencyCode": self.currency,
+            "GLN": self.gln,
+            "EmailAddress": self.email,
+            "Phone": self.phone,
+            "MobilePhone": self.mobile_phone,
+            "WwwAddress": self.url,
+            "Note": self.note,
+            "ContactPersonName": self.contact_name,
+            "ContactPersonEmail": self.contact_email,
+            "ContactPersonMobile": self.contact_mobile_phone,
+            "ContactPersonPhone": self.contact_phone,
+            "Name": self.address.name,
+            "InvoiceAddress1": self.address.address,
+            "InvoiceAddress2": self.address.secondary_address,
+            "InvoicePostalCode": self.address.postal_code,
+            "InvoiceCity": self.address.city,
+            "InvoiceCountryCode": self.address.country,
+            "DeliveryName": delivery_address.name,
+            "DeliveryAddress1": delivery_address.address,
+            "DeliveryAddress2": delivery_address.secondary_address,
+            "DeliveryPostalCode": delivery_address.postal_code,
+            "DeliveryCity": delivery_address.city,
+            "DeliveryCountryCode": delivery_address.country,
+            "DeliveryMethodId": getattrdeep(self, ["delivery_method", "id"], None),
+            "DeliveryTerms": getattrdeep(self, ["delivery_terms", "id"], None),
+            "TermsOfPaymentId": getattrdeep(self, ["terms_of_payment", "id"], None),
+            "WebshopCustomerNumber": self.webshop_customer_number,
+            "LastInvoiceDate": str(self.last_invoice_date),
+            "ChangedUtc": str(self.last_edited),
+            "ReverseChargeOnConstructionServices": self.reverse_charge_on_construction_services,
+        }
 
     @combomethod
     def from_json(cls, self, json):
