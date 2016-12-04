@@ -13,7 +13,8 @@ __all__ = [
 ]
 
 class FileTokenStorage(object):
-    # TODO: The current approach is possibly not thread safe
+    # TODO: The current approach is possibly not thread safe unless there is a
+    #       separate token storage, with its own file, per thread.
     def __init__(self, path):
         self.path = path
 
@@ -100,10 +101,33 @@ class VismaSession(OAuth2Session):
 
 
 class Store(object):
+    """
+    Connection manager for Visma API connection.
+
+    This class provides methods of querying and persisting objects
+    over the API.
+
+    :param client: Client used to handle communication over the API.
+                   This is in most cases an instance of :class:`VismaSession`,
+                   but the only requirement is that it manages authentication
+                   and provide a method ``request`` which the same arguments
+                   as Requests' ``request`` method.
+    """
+
     def __init__(self, client):
         self.client = client
 
     def find(self, type, **params):
+        """
+        Return a list of objects of the given ``type`` which matches
+        the filters provided as keyyword arguments.
+
+        :param type: Class to list
+        :param  **params: Keyword arguments to pass on to
+                          ``type._visma_list(**params)``.
+        :return: List of type ``type`` instances
+        :rtype: [type]
+        """
         response = self.client.request(**type._visma_list(**params))
 
         if response.status_code != 200:
@@ -115,6 +139,15 @@ class Store(object):
         return [type.from_json(data) for data in response.json()]
 
     def get(self, type, id):
+        """
+        Return the object of ``type`` with `ìd``.
+
+        :param type: Class of get
+        :param id: Visma's unique object ID, UUID style string
+        :return: Instance of type ``type`` if ID exists, else ``None``
+        :rtype: ``type`` or None
+        """
+
         response = self.client.request(**type._visma_get(id))
 
         if response.status_code != 200:
@@ -127,6 +160,12 @@ class Store(object):
         return type.from_json(response.json())
 
     def add(self, obj):
+        """
+        Store the given object in in Visma.
+
+        :param obj: Object to store
+        """
+
         response = self.client.request(**obj._visma_add())
 
         if response.status_code != 200:
